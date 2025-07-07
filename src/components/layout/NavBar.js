@@ -28,7 +28,8 @@ import {
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
-  Security as SecurityIcon
+  Security as SecurityIcon,
+  AccountBalance as BudgetIcon
 } from '@mui/icons-material';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -67,6 +68,7 @@ const NavBar = () => {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Transactions', icon: <ReceiptIcon />, path: '/transactions' },
+    { text: 'Budgets', icon: <BudgetIcon />, path: '/budgets' },
     { text: 'Add Transaction', icon: <AddIcon />, path: '/transactions/add' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];

@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 
-
 // Components
 import Register from './components/auth/Register';
 import NavBar from './components/layout/NavBar';
@@ -13,6 +12,7 @@ import AddTransaction from './components/transactions/AddTransaction';
 import TwoFactorAuth from './components/auth/TwoFactorAuth';
 import SetupTwoFactor from './components/auth/SetupTwoFactor';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import Budget from './components/budgets/Budget';
 
 // Auth Provider
 import { AuthProvider } from './contexts/AuthContext';
@@ -84,6 +84,14 @@ function App() {
               <ProtectedRoute>
                 <NavBar />
                 <AddTransaction />
+              </ProtectedRoute>
+            } />
+            
+            {/* Budget Management Route */}
+            <Route path="/budgets" element={
+              <ProtectedRoute>
+                <NavBar />
+                <Budget />
               </ProtectedRoute>
             } />
             

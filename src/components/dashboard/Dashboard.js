@@ -22,6 +22,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import transactionService from '../../services/transaction.service';
+import BudgetSummaryWidget from '../budgets/BudgetSummaryWidget';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
@@ -267,11 +268,11 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Charts Row */}
+      {/* Main Content Row - Charts and Budget Summary */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {/* Income vs Expenses Chart */}
-        <Grid item xs={12} md={6}>
-          <Paper elevation={2} sx={{ p: 3 }}>
+        <Grid item xs={12} lg={4}>
+          <Paper elevation={2} sx={{ p: 3, height: '400px' }}>
             <Typography variant="h6" gutterBottom>
               Income vs Expenses
             </Typography>
@@ -287,9 +288,16 @@ const Dashboard = () => {
           </Paper>
         </Grid>
 
+        {/* Budget Summary Widget */}
+        <Grid item xs={12} lg={4}>
+          <Box sx={{ height: '400px' }}>
+            <BudgetSummaryWidget transactions={profile?.transactions || []} />
+          </Box>
+        </Grid>
+
         {/* Expenses by Category Chart */}
-        <Grid item xs={12} md={6}>
-          <Paper elevation={2} sx={{ p: 3 }}>
+        <Grid item xs={12} lg={4}>
+          <Paper elevation={2} sx={{ p: 3, height: '400px' }}>
             <Typography variant="h6" gutterBottom>
               Expenses by Category
             </Typography>
@@ -377,8 +385,15 @@ const Dashboard = () => {
               <Button
                 variant="outlined"
                 onClick={() => navigate('/transactions')}
+                sx={{ mr: 2 }}
               >
                 View All Transactions
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/budgets')}
+              >
+                Manage Budgets
               </Button>
             </Box>
           </Box>
