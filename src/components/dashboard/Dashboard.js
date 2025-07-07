@@ -10,18 +10,50 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadProfile = async () => {
+    const loadDashboardData = async () => {
       try {
-        const data = await transactionService.getUserProfile();
-        setProfile(data);
+        console.log('Loading dashboard data...');
+        
+        // Try to get profile first
+        let profileData = null;
+        try {
+          profileData = await transactionService.getUserProfile();
+          console.log('Profile data received:', profileData);
+        } catch (profileErr) {
+          console.error('Profile endpoint failed:', profileErr);
+        }
+        
+        // Get all transactions to calculate balance
+        const transactions = await transactionService.getAllTransactions();
+        console.log('Transactions received:', transactions);
+        
+        // Calculate balance from transactions
+        const balance = transactions.reduce((total, transaction) => {
+          const amount = parseFloat(transaction.amount) || 0;
+          if (transaction.transaction_type === 'income') {
+            return total + amount;
+          } else {
+            return total - amount;
+          }
+        }, 0);
+        
+        console.log('Calculated balance:', balance);
+        
+        // Set profile data with calculated balance
+        setProfile({
+          ...profileData,
+          balance: balance,
+          transactions: transactions
+        });
+        
       } catch (err) {
-        console.error('Error loading profile:', err);
+        console.error('Error loading dashboard data:', err);
       } finally {
         setLoading(false);
       }
     };
-    
-    loadProfile();
+
+    loadDashboardData();
   }, []);
 
   if (loading) {
@@ -33,6 +65,7 @@ const Dashboard = () => {
   }
 
   const formatCurrency = (amount) => {
+    console.log('Formatting currency for amount:', amount, 'type:', typeof amount);
     if (amount === null || amount === undefined) return '$0.00';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -51,6 +84,10 @@ const Dashboard = () => {
             <Typography variant="h3">
               {formatCurrency(profile?.balance || 0)}
             </Typography>
+            {/* Debug info */}
+            <Typography variant="caption" color="text.secondary">
+              Debug: balance = {JSON.stringify(profile?.balance)}, type = {typeof profile?.balance}
+            </Typography>
           </Box>
           
           <Button
@@ -66,6 +103,14 @@ const Dashboard = () => {
       
       <Typography variant="h4">Dashboard</Typography>
       <Typography variant="body1">Simple dashboard view</Typography>
+      
+      {/* Debug section */}
+      <Paper elevation={1} sx={{ p: 2, mt: 2, bgcolor: 'grey.100' }}>
+        <Typography variant="h6" gutterBottom>Debug Info:</Typography>
+        <pre style={{ fontSize: '12px', overflow: 'auto' }}>
+          {JSON.stringify(profile, null, 2)}
+        </pre>
+      </Paper>
     </Container>
   );
 };

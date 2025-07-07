@@ -7,7 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Important for CSRF and session cookies
+  withCredentials: true, // This is crucial for session cookies
 });
 
 // Add a request interceptor to include CSRF token
@@ -18,6 +18,10 @@ api.interceptors.request.use(
     if (csrfToken) {
       config.headers['X-CSRFToken'] = csrfToken;
     }
+    
+    // Also ensure credentials are sent with every request
+    config.withCredentials = true;
+    
     return config;
   },
   (error) => {
