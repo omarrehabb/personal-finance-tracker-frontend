@@ -1,8 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { 
+  Container, 
+  Typography, 
+  Paper, 
+  Box, 
+  Button, 
+  CircularProgress, 
+  Grid,
+  Card,
+  CardContent,
+  Avatar,
+  Chip
+} from '@mui/material';
+import { 
+  Add as AddIcon,
+  TrendingUp as IncomeIcon,
+  TrendingDown as ExpenseIcon,
+  AccountBalanceWallet as BalanceIcon,
+  Receipt as TransactionIcon
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import transactionService from '../../services/transaction.service';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
 const Dashboard = () => {
   const [profile, setProfile] = useState(null);
@@ -56,6 +77,73 @@ const Dashboard = () => {
     loadDashboardData();
   }, []);
 
+  const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) return '$0.00';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(Number(amount));
+  };
+
+  const getExpensesByCategory = () => {
+    if (!profile?.transactions) return [];
+    
+    const expensesByCategory = {};
+    profile.transactions
+      .filter(t => t.transaction_type === 'expense')
+      .forEach(transaction => {
+        const category = transaction.category || 'Other';
+        expensesByCategory[category] = (expensesByCategory[category] || 0) + parseFloat(transaction.amount);
+      });
+    
+    return Object.entries(expensesByCategory).map(([category, amount]) => ({
+      name: category,
+      value: amount
+    }));
+  };
+
+  const getIncomeVsExpenses = () => {
+    if (!profile?.transactions) return [];
+    
+    const totalIncome = profile.transactions
+      .filter(t => t.transaction_type === 'income')
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    
+    const totalExpenses = profile.transactions
+      .filter(t => t.transaction_type === 'expense')
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    
+    return [
+      { name: 'Income', amount: totalIncome, color: '#00C49F' },
+      { name: 'Expenses', amount: totalExpenses, color: '#FF8042' }
+    ];
+  };
+
+  const getRecentTransactions = () => {
+    if (!profile?.transactions) return [];
+    return profile.transactions
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 5);
+  };
+
+  const getStats = () => {
+    if (!profile?.transactions) return { totalIncome: 0, totalExpenses: 0, transactionCount: 0 };
+    
+    const totalIncome = profile.transactions
+      .filter(t => t.transaction_type === 'income')
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    
+    const totalExpenses = profile.transactions
+      .filter(t => t.transaction_type === 'expense')
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    
+    return {
+      totalIncome,
+      totalExpenses,
+      transactionCount: profile.transactions.length
+    };
+  };
+
   if (loading) {
     return (
       <Container sx={{ mt: 4, textAlign: 'center' }}>
@@ -64,52 +152,241 @@ const Dashboard = () => {
     );
   }
 
-  const formatCurrency = (amount) => {
-    console.log('Formatting currency for amount:', amount, 'type:', typeof amount);
-    if (amount === null || amount === undefined) return '$0.00';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(Number(amount));
-  };
+  const stats = getStats();
+  const expenseData = getExpensesByCategory();
+  const incomeVsExpenses = getIncomeVsExpenses();
+  const recentTransactions = getRecentTransactions();
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Header with Balance */}
+      <Paper elevation={3} sx={{ p: 3, mb: 3, background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="h6" color="text.secondary" gutterBottom>
+          <Box sx={{ color: 'white' }}>
+            <Typography variant="h6" gutterBottom>
               Current Balance
             </Typography>
-            <Typography variant="h3">
+            <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
               {formatCurrency(profile?.balance || 0)}
-            </Typography>
-            {/* Debug info */}
-            <Typography variant="caption" color="text.secondary">
-              Debug: balance = {JSON.stringify(profile?.balance)}, type = {typeof profile?.balance}
             </Typography>
           </Box>
           
           <Button
             variant="contained"
-            color="primary"
+            color="secondary"
+            size="large"
             startIcon={<AddIcon />}
             onClick={() => navigate('/transactions/add')}
+            sx={{ bgcolor: 'white', color: 'primary.main', '&:hover': { bgcolor: 'grey.100' } }}
           >
             Add Transaction
           </Button>
         </Box>
       </Paper>
-      
-      <Typography variant="h4">Dashboard</Typography>
-      <Typography variant="body1">Simple dashboard view</Typography>
-      
-      {/* Debug section */}
-      <Paper elevation={1} sx={{ p: 2, mt: 2, bgcolor: 'grey.100' }}>
-        <Typography variant="h6" gutterBottom>Debug Info:</Typography>
-        <pre style={{ fontSize: '12px', overflow: 'auto' }}>
-          {JSON.stringify(profile, null, 2)}
-        </pre>
+
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                  <IncomeIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    {formatCurrency(stats.totalIncome)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Income
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ bgcolor: 'error.main', mr: 2 }}>
+                  <ExpenseIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    {formatCurrency(stats.totalExpenses)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Expenses
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
+                  <TransactionIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    {stats.transactionCount}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Transactions
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ bgcolor: 'warning.main', mr: 2 }}>
+                  <BalanceIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    {formatCurrency(stats.totalIncome - stats.totalExpenses)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Net Income
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Charts Row */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        {/* Income vs Expenses Chart */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={2} sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Income vs Expenses
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={incomeVsExpenses}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value) => formatCurrency(value)} />
+                <Bar dataKey="amount" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Grid>
+
+        {/* Expenses by Category Chart */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={2} sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Expenses by Category
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={expenseData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {expenseData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => formatCurrency(value)} />
+              </PieChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Recent Transactions */}
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Recent Transactions
+        </Typography>
+        {recentTransactions.length > 0 ? (
+          <Box>
+            {recentTransactions.map((transaction) => (
+              <Box
+                key={transaction.id}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  py: 2,
+                  borderBottom: '1px solid #eee'
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: transaction.transaction_type === 'income' ? 'success.main' : 'error.main',
+                      mr: 2,
+                      width: 40,
+                      height: 40
+                    }}
+                  >
+                    {transaction.transaction_type === 'income' ? <IncomeIcon /> : <ExpenseIcon />}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                      {transaction.description || transaction.category}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 'bold',
+                      color: transaction.transaction_type === 'income' ? 'success.main' : 'error.main'
+                    }}
+                  >
+                    {transaction.transaction_type === 'income' ? '+' : '-'}
+                    {formatCurrency(transaction.amount)}
+                  </Typography>
+                  <Chip
+                    label={transaction.category}
+                    size="small"
+                    sx={{ mt: 0.5 }}
+                  />
+                </Box>
+              </Box>
+            ))}
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/transactions')}
+              >
+                View All Transactions
+              </Button>
+            </Box>
+          </Box>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No transactions yet. Add your first transaction to get started!
+          </Typography>
+        )}
       </Paper>
     </Container>
   );

@@ -1,70 +1,262 @@
-# Getting Started with Create React App
+# Personal Finance Tracker - Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, responsive web application for managing personal finances built with React and Material-UI. Track your income and expenses with beautiful visualizations and comprehensive analytics.
 
-## Available Scripts
+## 🚀 Features
 
-In the project directory, you can run:
+### 📊 Dashboard
+- **Real-time Balance Calculation** - Automatically calculated from all transactions
+- **Visual Analytics** - Interactive charts showing income vs expenses and spending by category
+- **Quick Stats** - Total income, expenses, transaction count, and net income at a glance
+- **Recent Transactions** - Latest 5 transactions with quick access to full transaction list
+- **Beautiful Design** - Gradient backgrounds, color-coded elements, and responsive layout
 
-### `npm start`
+### 🔐 Authentication
+- **Secure Login/Registration** - Session-based authentication with CSRF protection
+- **Two-Factor Authentication (2FA)** - Enhanced security with optional 2FA setup
+- **Protected Routes** - Automatic redirection for unauthenticated users
+- **Session Management** - Persistent login sessions with proper logout functionality
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 💰 Transaction Management
+- **Add Transactions** - Easy-to-use forms for recording income and expenses
+- **Edit/Delete** - Full CRUD operations on transactions
+- **Categorization** - Organize transactions by categories for better tracking
+- **Date Tracking** - Chronological organization of all financial activities
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 📱 User Experience
+- **Responsive Design** - Works seamlessly on desktop, tablet, and mobile devices
+- **Material-UI Components** - Modern, consistent UI following Material Design principles
+- **Loading States** - Smooth user experience with proper loading indicators
+- **Error Handling** - Comprehensive error messages and fallback states
 
-### `npm test`
+## 🛠️ Technology Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Frontend Framework**: React 18+
+- **UI Library**: Material-UI (MUI) v5
+- **Routing**: React Router v6
+- **Charts**: Recharts
+- **HTTP Client**: Axios
+- **State Management**: React Context API
+- **Authentication**: Session-based with CSRF tokens
 
-### `npm run build`
+## 📦 Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Prerequisites
+- Node.js (v14 or higher)
+- npm or yarn package manager
+- Running Django backend (see backend repository)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Setup Steps
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd personal-finance-frontend
+   ```
 
-### `npm run eject`
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+3. **Install additional chart library**
+   ```bash
+   npm install recharts
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+4. **Configure API endpoint**
+   Update the API base URL in `src/services/api.js`:
+   ```javascript
+   const api = axios.create({
+     baseURL: 'http://localhost:8000', // Update to your backend URL
+     // ... other config
+   });
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+5. **Start the development server**
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+6. **Open your browser**
+   Navigate to `http://localhost:3000`
 
-## Learn More
+## 🏗️ Project Structure
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```
+src/
+├── components/
+│   ├── auth/
+│   │   ├── Login.js              # Login form component
+│   │   ├── Register.js           # Registration form
+│   │   └── TwoFactorSetup.js     # 2FA configuration
+│   ├── transactions/
+│   │   ├── TransactionList.js    # List view of transactions
+│   │   ├── TransactionForm.js    # Add/edit transaction form
+│   │   └── Dashboard.js          # Main dashboard with analytics
+│   └── layout/
+│       ├── Header.js             # Navigation header
+│       ├── Sidebar.js            # Side navigation
+│       └── Layout.js             # Main layout wrapper
+├── contexts/
+│   └── AuthContext.js            # Authentication state management
+├── services/
+│   ├── api.js                    # Axios configuration and interceptors
+│   ├── auth.service.js           # Authentication API calls
+│   └── transaction.service.js    # Transaction API calls
+├── utils/
+│   └── formatters.js             # Currency and date formatting utilities
+└── App.js                        # Main application component
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🔧 Key Components
 
-### Code Splitting
+### Dashboard
+The main dashboard provides:
+- Current balance prominently displayed
+- Four key metric cards (Total Income, Total Expenses, Transaction Count, Net Income)
+- Interactive bar chart comparing income vs expenses
+- Pie chart showing expense breakdown by category
+- Recent transactions list with quick actions
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Authentication System
+- Secure login with username/password
+- Optional two-factor authentication
+- Session persistence with automatic logout
+- CSRF token protection for all API calls
 
-### Analyzing the Bundle Size
+### Transaction Management
+- Clean, intuitive forms for adding transactions
+- Real-time validation and error handling
+- Category-based organization
+- Edit and delete functionality with confirmation dialogs
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 📊 Screenshots
 
-### Making a Progressive Web App
+### Dashboard
+![alt text](image.png)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Login Screen
+![alt text](image-1.png)
 
-### Advanced Configuration
+### Transaction List
+![alt text](image-2.png)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Add Transaction Form
+![alt text](image-3.png)
 
-### Deployment
+## 🔑 API Integration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+The frontend communicates with a Django REST API backend:
 
-### `npm run build` fails to minify
+### Authentication Endpoints
+- `POST /api-auth/login/` - User login
+- `POST /api-auth/logout/` - User logout
+- `POST /api/auth/register/` - User registration
+- `GET /2fa/status/` - Check 2FA status
+- `POST /2fa/verify/` - Verify 2FA token
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Transaction Endpoints
+- `GET /api/transactions/` - Fetch all transactions
+- `POST /api/transactions/` - Create new transaction
+- `PUT /api/transactions/{id}/` - Update transaction
+- `DELETE /api/transactions/{id}/` - Delete transaction
+- `GET /api/transactions/summary/` - Get transaction summary
+
+## 🛡️ Security Features
+
+- **CSRF Protection** - All requests include CSRF tokens
+- **Session-based Authentication** - Secure session management
+- **Input Validation** - Client-side and server-side validation
+- **Protected Routes** - Authentication required for sensitive pages
+- **Secure Headers** - Proper HTTP security headers implementation
+
+## 🎨 Design System
+
+### Layout
+- **Responsive Grid**: Material-UI Grid system
+- **Card-based Design**: Clean separation of content areas
+- **Consistent Spacing**: Material-UI spacing system (8px base unit)
+
+## 🔄 State Management
+
+The application uses React Context API for:
+- **Authentication State** - User login status and profile data
+- **Transaction State** - Current transaction data and operations
+- **UI State** - Loading states, errors, and notifications
+
+## 📱 Responsive Design
+
+The application is fully responsive and optimized for:
+- **Desktop** (1200px+): Full featured layout with sidebar navigation
+
+## 🧪 Testing
+
+### Running Tests
+```bash
+npm test
+# or
+yarn test
+```
+
+### Test Coverage
+- **Unit Tests** - Component logic and utility functions
+- **Integration Tests** - API service interactions
+- **E2E Tests** - Critical user flows (login, transaction creation)
+
+## 🔧 Development
+
+### Development Commands
+```bash
+npm start          # Start development server
+npm test           # Run test suite
+npm run build      # Build for production
+npm run lint       # Run ESLint
+npm run format     # Format code with Prettier
+```
+
+## 📝 Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+REACT_APP_API_URL=http://localhost:8000
+REACT_APP_APP_NAME=Personal Finance Tracker
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+If you encounter any issues or have questions:
+
+1. Check the [Issues](link-to-issues) page for existing problems
+2. Create a new issue with detailed information
+3. Include screenshots and error messages when applicable
+
+## 🔮 Roadmap
+
+### Upcoming Features
+- **Budget Management** - Set and track spending budgets by category
+- **Recurring Transactions** - Automate regular income and expenses
+- **Advanced Reports** - Monthly/yearly financial reports with export
+- **Mobile App** - React Native mobile application
+- **Bank Integration** - Connect to bank accounts for automatic transaction import
+
+---
+
+*Built with ❤️ using React and Material-UI*
