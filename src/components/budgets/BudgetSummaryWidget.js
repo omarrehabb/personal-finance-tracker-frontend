@@ -1,4 +1,3 @@
-// src/components/budgets/BudgetSummaryWidget.js
 import React, { useState, useEffect } from 'react';
 import {
   Paper,
