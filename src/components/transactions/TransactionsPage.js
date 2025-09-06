@@ -167,6 +167,14 @@ const TransactionsPage = () => {
           color="primary"
           startIcon={<AddIcon />}
           onClick={() => navigate('/transactions/add')}
+          sx={{
+            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+            color: '#ffffff',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%)',
+              color: '#ffffff',
+            }
+          }}
         >
           Add Transaction
         </Button>
@@ -275,6 +283,14 @@ const TransactionsPage = () => {
                           size="small"
                           startIcon={<AddIcon />}
                           onClick={() => navigate('/transactions/add')}
+                          sx={{
+                            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                            color: '#ffffff',
+                            '&:hover': {
+                              background: 'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%)',
+                              color: '#ffffff',
+                            }
+                          }}
                         >
                           Add Your First Transaction
                         </Button>

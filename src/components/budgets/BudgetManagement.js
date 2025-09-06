@@ -1,4 +1,3 @@
-// src/components/budgets/BudgetManagement.js
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -19,7 +18,6 @@ import {
   TextField,
   MenuItem,
   Alert,
-  Fab,
   CircularProgress
 } from '@mui/material';
 import {
@@ -49,51 +47,46 @@ const BudgetManagement = () => {
   const [budgetStatus, setBudgetStatus] = useState([]);
 
   useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        
+        // Load transactions first
+        const transactionsData = await transactionService.getAllTransactions();
+        setTransactions(transactionsData);
+        
+        // Load budgets from API
+        const budgetsData = await budgetService.getAllBudgets();
+        setBudgets(budgetsData);
+        
+        // Budget status is now calculated on the backend and included in the response
+        setBudgetStatus(budgetsData);
+        
+      } catch (error) {
+        console.error('Error loading budget data:', error);
+        
+        // Fallback to localStorage if API fails
+        console.log('Falling back to localStorage...');
+        const savedBudgets = localStorage.getItem('userBudgets');
+        if (savedBudgets) {
+          const localBudgets = JSON.parse(savedBudgets);
+          setBudgets(localBudgets);
+          
+          // Calculate status locally if needed
+          const status = budgetService.calculateBudgetStatus(localBudgets, []);
+          setBudgetStatus(status);
+        } else {
+          // If no saved budgets and API fails, use empty arrays
+          setBudgets([]);
+          setBudgetStatus([]);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadData();
   }, []);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      
-      // Load transactions first
-      const transactionsData = await transactionService.getAllTransactions();
-      setTransactions(transactionsData);
-      
-      // Load budgets from API
-      const budgetsData = await budgetService.getAllBudgets();
-      setBudgets(budgetsData);
-      
-      // Budget status is now calculated on the backend and included in the response
-      setBudgetStatus(budgetsData);
-      
-    } catch (error) {
-      console.error('Error loading budget data:', error);
-      
-      // Fallback to localStorage if API fails
-      console.log('Falling back to localStorage...');
-      const savedBudgets = localStorage.getItem('userBudgets');
-      if (savedBudgets) {
-        const localBudgets = JSON.parse(savedBudgets);
-        setBudgets(localBudgets);
-        
-        // Calculate status locally if needed (using transactions from state or empty array)
-        const currentTransactions = transactions.length > 0 ? transactions : [];
-        const status = budgetService.calculateBudgetStatus(localBudgets, currentTransactions);
-        setBudgetStatus(status);
-      } else {
-        // If no saved budgets and API fails, use empty arrays
-        setBudgets([]);
-        setBudgetStatus([]);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveBudgetsToStorage = (budgetsArray) => {
-    localStorage.setItem('userBudgets', JSON.stringify(budgetsArray));
-  };
 
   const handleOpenDialog = (budget = null) => {
     if (budget) {
@@ -215,7 +208,29 @@ const BudgetManagement = () => {
     }).format(amount);
   };
 
-  const availableCategories = budgetService.getAvailableCategories(transactions);
+  // Get available categories - fallback to default categories if service fails
+  const getAvailableCategories = () => {
+    try {
+      return budgetService.getAvailableCategories(transactions);
+    } catch (error) {
+      console.error('Error getting categories:', error);
+      // Fallback to default categories
+      return [
+        { name: 'Food & Dining', icon: '🍽️' },
+        { name: 'Transportation', icon: '🚗' },
+        { name: 'Shopping', icon: '🛍️' },
+        { name: 'Entertainment', icon: '🎬' },
+        { name: 'Bills & Utilities', icon: '💡' },
+        { name: 'Healthcare', icon: '🏥' },
+        { name: 'Education', icon: '📚' },
+        { name: 'Travel', icon: '✈️' },
+        { name: 'Personal Care', icon: '💄' },
+        { name: 'Other', icon: '📦' }
+      ];
+    }
+  };
+
+  const availableCategories = getAvailableCategories();
   const usedCategories = budgets.map(b => b.category);
   const availableCategoriesForNew = availableCategories.filter(cat => !usedCategories.includes(cat.name));
 
@@ -238,7 +253,18 @@ const BudgetManagement = () => {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
-          disabled={availableCategoriesForNew.length === 0}
+          sx={{
+            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%) !important',
+            color: '#ffffff !important',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%) !important',
+              color: '#ffffff !important',
+            },
+            '&.Mui-disabled': {
+              background: '#e0e0e0 !important',
+              color: '#9e9e9e !important',
+            }
+          }}
         >
           Add Budget
         </Button>
@@ -383,6 +409,14 @@ const BudgetManagement = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => handleOpenDialog()}
+            sx={{
+              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%) !important',
+              color: '#ffffff !important',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%) !important',
+                color: '#ffffff !important',
+              }
+            }}
           >
             Create Your First Budget
           </Button>
@@ -412,11 +446,17 @@ const BudgetManagement = () => {
                       {cat.icon} {cat.name}
                     </MenuItem>
                   ))
-                : availableCategoriesForNew.map((cat) => (
-                    <MenuItem key={cat.name} value={cat.name}>
-                      {cat.icon} {cat.name}
-                    </MenuItem>
-                  ))
+                : availableCategoriesForNew.length > 0 
+                  ? availableCategoriesForNew.map((cat) => (
+                      <MenuItem key={cat.name} value={cat.name}>
+                        {cat.icon} {cat.name}
+                      </MenuItem>
+                    ))
+                  : availableCategories.map((cat) => (
+                      <MenuItem key={cat.name} value={cat.name}>
+                        {cat.icon} {cat.name}
+                      </MenuItem>
+                    ))
               }
             </TextField>
 
@@ -449,7 +489,18 @@ const BudgetManagement = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained">
+          <Button 
+            onClick={handleSubmit} 
+            variant="contained"
+            sx={{
+              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%) !important',
+              color: '#ffffff !important',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #5a6fd8 30%, #6a4190 90%) !important',
+                color: '#ffffff !important',
+              }
+            }}
+          >
             {editingBudget ? 'Update' : 'Create'} Budget
           </Button>
         </DialogActions>
