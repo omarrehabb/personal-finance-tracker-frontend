@@ -41,7 +41,6 @@ import {
   CreditCard as CreditIcon,
   Savings as SavingsIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import openBankingService from '../../services/openBanking.service';
 import ConfirmationDialog from '../common/ConfirmationDialog';
 import { useCurrency } from '../../contexts/CurrencyContext'; 
@@ -60,9 +59,6 @@ const BankConnectionManager = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [bankToDisconnect, setBankToDisconnect] = useState(null);
   const [disconnecting, setDisconnecting] = useState(false);
-
-
-  const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
 
   useEffect(() => {
@@ -137,18 +133,7 @@ const BankConnectionManager = () => {
     }
   };
 
-  const handleDisconnectBank = async (bankId) => {
-    if (window.confirm('Are you sure you want to disconnect this bank? This will remove all imported transactions.')) {
-      try {
-        await openBankingService.disconnectBank(bankId);
-        setSuccessMessage('Bank disconnected successfully');
-        await loadData();
-      } catch (error) {
-        console.error('Error disconnecting bank:', error);
-        setErrorMessage('Failed to disconnect bank');
-      }
-    }
-  };
+  // Legacy disconnect handler removed; using confirmation dialog instead
 
   const confirmDisconnection = async () => {
   if (!bankToDisconnect) return;

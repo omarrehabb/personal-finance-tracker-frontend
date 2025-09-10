@@ -487,5 +487,5 @@ class OpenBankingService {
     return 'error';
   }
 }
-
-export default new OpenBankingService();
+const openBankingService = new OpenBankingService();
+export default openBankingService;
