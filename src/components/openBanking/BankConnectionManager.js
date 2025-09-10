@@ -329,7 +329,7 @@ const BankConnectionManager = () => {
                     <Tooltip title="Disconnect bank">
                       <IconButton 
                         onClick={() => {
-                            const bank = availableBanks.find(b => b.id === bankId);
+                            const bank = availableBanks.find(b => b.id === bankId) || { id: bankId, name: bankId, color: '#9e9e9e' };
                             setBankToDisconnect(bank);
                             setConfirmDialogOpen(true);
                         }}
