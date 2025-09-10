@@ -1,9 +1,12 @@
 // src/services/api.js
 import axios from 'axios';
 
+// Choose base URL: use same-origin in production, localhost in dev
+const baseURL = process.env.REACT_APP_API_BASE || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000');
+
 // Create an Axios instance with default config
 const api = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
