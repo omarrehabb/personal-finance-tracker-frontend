@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import BankConnectionManager from './components/openBanking/BankConnectionManager';
+import TransactionImport from './components/openBanking/TransactionImport';
+
 
 // Components
 import Register from './components/auth/Register';
@@ -13,9 +16,13 @@ import TwoFactorAuth from './components/auth/TwoFactorAuth';
 import SetupTwoFactor from './components/auth/SetupTwoFactor';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Budget from './components/budgets/Budget';
+import Settings from './components/settings/Settings';
 
 // Auth Provider
 import { AuthProvider } from './contexts/AuthContext';
+
+// Currency Provider
+import { CurrencyProvider } from './contexts/CurrencyContext';
 
 // Enhanced Modern Theme
 const theme = createTheme({
@@ -210,6 +217,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <CurrencyProvider>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -217,6 +225,21 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/verify-2fa" element={<TwoFactorAuth />} />
+
+            {/* Open Banking Routes */}
+            <Route path="/open-banking" element={
+              <ProtectedRoute>
+                <NavBar />
+                <BankConnectionManager />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/open-banking/import" element={
+              <ProtectedRoute>
+                <NavBar />
+                <TransactionImport />
+              </ProtectedRoute>
+            } />
             
             {/* Protected routes */}
             <Route path="/" element={
@@ -262,15 +285,16 @@ function App() {
               </ProtectedRoute>
             } />
             
-            <Route path="/settings/security" element={
+            <Route path="/settings" element={
               <ProtectedRoute>
                 <NavBar />
-                <SetupTwoFactor />
+                <Settings />
               </ProtectedRoute>
             } />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      </CurrencyProvider>
     </ThemeProvider>
   );
 }

@@ -17,6 +17,7 @@ import {
   Grid
 } from '@mui/material';
 import transactionService from '../../services/transaction.service';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 // Transaction types
 const transactionTypes = [
@@ -37,6 +38,7 @@ const incomeCategories = [
 ];
 
 const AddTransaction = () => {
+  const { getCurrencySymbol } = useCurrency();
   const [formData, setFormData] = useState({
     transaction_type: 'expense',
     amount: '',
@@ -214,7 +216,7 @@ const AddTransaction = () => {
                 error={!!errors.amount}
                 helperText={errors.amount}
                 InputProps={{
-                  startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
+                  startAdornment: <Typography sx={{ mr: 1 }}>{getCurrencySymbol()}</Typography>,
                 }}
               />
             </Grid>

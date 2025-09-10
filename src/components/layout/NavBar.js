@@ -29,7 +29,8 @@ import {
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
   Security as SecurityIcon,
-  AccountBalance as BudgetIcon
+  AccountBalance as BudgetIcon,
+  AccountBalance as BankIcon
 } from '@mui/icons-material';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -69,6 +70,7 @@ const NavBar = () => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Transactions', icon: <ReceiptIcon />, path: '/transactions' },
     { text: 'Budgets', icon: <BudgetIcon />, path: '/budgets' },
+    { text: 'Banking', icon: <BankIcon />, path: '/open-banking' },
     { text: 'Add Transaction', icon: <AddIcon />, path: '/transactions/add' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
@@ -141,7 +143,13 @@ const NavBar = () => {
                   to={item.path}
                   startIcon={item.icon}
                   sx={{
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    px: 2,
                     backgroundColor: location.pathname === item.path ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    }
                   }}
                 >
                   {item.text}

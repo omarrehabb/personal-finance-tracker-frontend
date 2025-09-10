@@ -28,6 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import transactionService from '../../services/transaction.service';
 import BudgetSummaryWidget from '../budgets/BudgetSummaryWidget';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const COLORS = ['#667eea', '#f093fb', '#4dd0e1', '#ff6b9d', '#ffa726', '#42a5f5'];
 
@@ -36,6 +37,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
+  const { formatCurrency } = useCurrency();
 
   const loadDashboardData = useCallback(async (showRefreshLoader = false) => {
     try {
@@ -81,14 +83,6 @@ const Dashboard = () => {
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
-
-  const formatCurrency = (amount) => {
-    if (amount === null || amount === undefined) return '$0.00';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(Number(amount));
-  };
 
   const getExpensesByCategory = () => {
     if (!profile?.transactions) return [];
@@ -305,19 +299,19 @@ const Dashboard = () => {
         ))}
       </Grid>
 
-      {/* Main Content Row - Charts and Budget Summary */}
+      {/* First Row - Income vs Expenses and Budget Summary */}
       <Grid container spacing={4} sx={{ mb: 4 }}>
         {/* Income vs Expenses Chart */}
-        <Grid item xs={12} lg={4}>
+        <Grid item xs={12} lg={6}>
           <Fade in timeout={600}>
-            <Paper elevation={0} sx={{ p: 3, height: '420px', borderRadius: 3 }}>
+            <Paper elevation={0} sx={{ p: 3, height: '500px', borderRadius: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <ChartIcon sx={{ mr: 1, color: 'primary.main' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   Income vs Expenses
                 </Typography>
               </Box>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={400}>
                 <BarChart data={incomeVsExpenses}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="name" stroke="#666" />
@@ -339,41 +333,43 @@ const Dashboard = () => {
         </Grid>
 
         {/* Budget Summary Widget */}
-        <Grid item xs={12} lg={4}>
+        <Grid item xs={12} lg={6}>
           <Fade in timeout={700}>
-            <Box sx={{ height: '420px' }}>
+            <Box sx={{ height: '500px' }}>
               <BudgetSummaryWidget transactions={profile?.transactions || []} />
             </Box>
           </Fade>
         </Grid>
+      </Grid>
 
-        {/* Expenses by Category Chart */}
-        <Grid item xs={12} lg={4}>
+      {/* Second Row - Expenses by Category Chart */}
+      <Grid container spacing={4} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
           <Fade in timeout={800}>
-            <Paper elevation={0} sx={{ p: 3, height: '420px', borderRadius: 3 }}>
+            <Paper elevation={0} sx={{ p: 3, height: '500px', borderRadius: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                 Expenses by Category
               </Typography>
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height={400}>
                 <PieChart>
                   <Pie
                     data={expenseData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => percent > 5 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
-                    outerRadius={90}
+                    label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(1)}%`}
+                    outerRadius={160}
                     fill="#8884d8"
                     dataKey="value"
                     strokeWidth={2}
                     stroke="#fff"
                   >
-                    {expenseData.map((entry, index) => (
+                    {expenseData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value) => [formatCurrency(value), 'Amount']}
+                    formatter={(value, _, props) => [formatCurrency(value), props.payload.name]}
                     contentStyle={{
                       backgroundColor: 'white',
                       border: 'none',

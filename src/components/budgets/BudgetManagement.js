@@ -31,6 +31,8 @@ import {
 } from '@mui/icons-material';
 import budgetService from '../../services/budget.service';
 import transactionService from '../../services/transaction.service';
+import ConfirmationDialog from '../common/ConfirmationDialog';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const BudgetManagement = () => {
   const [budgets, setBudgets] = useState([]);
@@ -45,6 +47,12 @@ const BudgetManagement = () => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [budgetStatus, setBudgetStatus] = useState([]);
+  const { formatCurrency, getCurrencySymbol } = useCurrency();
+  
+  // Confirmation dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -168,16 +176,47 @@ const BudgetManagement = () => {
     }
   };
 
-  const handleDelete = async (budgetId) => {
-    if (window.confirm('Are you sure you want to delete this budget?')) {
-      try {
-        await budgetService.deleteBudget(budgetId);
-        setBudgets(prev => prev.filter(budget => budget.id !== budgetId));
-        setBudgetStatus(prev => prev.filter(status => status.id !== budgetId));
-      } catch (error) {
-        console.error('Error deleting budget:', error);
-        alert('Failed to delete budget. Please try again.');
+  const handleDelete = (budget) => {
+    console.log("HANDLE DELETE CALLED!", budget);
+    setBudgetToDelete(budget);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!budgetToDelete) return;
+    
+    try {
+      setDeleting(true);
+      await budgetService.deleteBudget(budgetToDelete.id);
+      
+      // Update both budgets and budgetStatus arrays
+      setBudgets(prev => prev.filter(budget => budget.id !== budgetToDelete.id));
+      setBudgetStatus(prev => prev.filter(status => status.id !== budgetToDelete.id));
+      
+      // Also remove from localStorage as a fallback
+      const savedBudgets = localStorage.getItem('userBudgets');
+      if (savedBudgets) {
+        const localBudgets = JSON.parse(savedBudgets);
+        const updatedBudgets = localBudgets.filter(budget => budget.id !== budgetToDelete.id);
+        localStorage.setItem('userBudgets', JSON.stringify(updatedBudgets));
       }
+      
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+      // If API fails, still remove from local state and localStorage
+      setBudgets(prev => prev.filter(budget => budget.id !== budgetToDelete.id));
+      setBudgetStatus(prev => prev.filter(status => status.id !== budgetToDelete.id));
+      
+      const savedBudgets = localStorage.getItem('userBudgets');
+      if (savedBudgets) {
+        const localBudgets = JSON.parse(savedBudgets);
+        const updatedBudgets = localBudgets.filter(budget => budget.id !== budgetToDelete.id);
+        localStorage.setItem('userBudgets', JSON.stringify(updatedBudgets));
+      }
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+      setBudgetToDelete(null);
     }
   };
 
@@ -199,13 +238,6 @@ const BudgetManagement = () => {
       case 'over': return <ErrorIcon color="error" />;
       default: return <CheckCircleIcon />;
     }
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
   };
 
   // Get available categories - fallback to default categories if service fails
@@ -348,7 +380,7 @@ const BudgetManagement = () => {
                     </IconButton>
                     <IconButton
                       size="small"
-                      onClick={() => handleDelete(budget.id)}
+                      onClick={() => handleDelete(budget)}
                       color="error"
                     >
                       <DeleteIcon />
@@ -469,7 +501,7 @@ const BudgetManagement = () => {
               error={!!formErrors.amount}
               helperText={formErrors.amount}
               InputProps={{
-                startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>
+                startAdornment: <Typography sx={{ mr: 1 }}>{getCurrencySymbol()}</Typography>
               }}
               sx={{ mb: 2 }}
             />
@@ -505,6 +537,19 @@ const BudgetManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+      open={deleteDialogOpen}
+      onClose={() => setDeleteDialogOpen(false)}
+      onConfirm={confirmDelete}
+      title="Delete Budget"
+      message={`Are you sure you want to delete the budget for "${budgetToDelete?.category}"? This action cannot be undone.`}
+      type="danger"
+      confirmText="Delete Budget"
+      cancelText="Cancel"
+      loading={deleting}
+    />
     </Container>
   );
 };

@@ -36,6 +36,7 @@ import {
   ArrowDownward as ArrowDownwardIcon
 } from '@mui/icons-material';
 import transactionService from '../../services/transaction.service';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const TransactionsPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -47,25 +48,22 @@ const TransactionsPage = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  
+  const { formatCurrency } = useCurrency();
+
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for success message from navigation state
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
-      // Clear the state to prevent message reappearing on refresh
       window.history.replaceState({}, document.title);
     }
-    
     loadTransactions();
   }, [location]);
 
   const loadTransactions = async () => {
     setLoading(true);
     setError('');
-    
     try {
       const data = await transactionService.getAllTransactions();
       setTransactions(data);
@@ -79,7 +77,7 @@ const TransactionsPage = () => {
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
-    setPage(0); // Reset to first page when searching
+    setPage(0);
   };
 
   const handleMenuOpen = (event, transaction) => {
@@ -122,13 +120,11 @@ const TransactionsPage = () => {
     setPage(0);
   };
 
-  // Filter transactions based on search query
   const filteredTransactions = transactions.filter(transaction => 
     transaction.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     transaction.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString();
   };
@@ -249,7 +245,8 @@ const TransactionsPage = () => {
                         fontWeight: 'bold',
                         color: transaction.transaction_type === 'income' ? 'success.main' : 'error.main'
                       }}>
-                        {transaction.transaction_type === 'income' ? '+' : '-'}${Number(transaction.amount).toFixed(2)}
+                        {transaction.transaction_type === 'income' ? '+' : '-'}
+                        {formatCurrency(Number(transaction.amount))}
                       </TableCell>
                       <TableCell align="right">
                         <IconButton 
