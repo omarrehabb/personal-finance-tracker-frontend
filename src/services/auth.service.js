@@ -1,4 +1,3 @@
-// src/services/auth.service.js
 import api from './api';
 
 const AUTH_ENDPOINTS = {
@@ -194,18 +193,20 @@ class AuthService {
     }
   }
   
-  // Helper method to check if user is authenticated
+  // Helper method to check if user is authenticated and get user data
   async isAuthenticated() {
     try {
       console.log('Checking authentication status...');
-      // Try to access a protected endpoint
       const response = await api.get('/api/profiles/my_profile/');
       console.log('Auth check response status:', response.status);
       console.log('Auth check response data:', response.data);
-      return response.status === 200;
+      if (response.status === 200 && response.data && response.data.user) {
+        return { authenticated: true, user: response.data.user };
+      }
+      return { authenticated: false };
     } catch (error) {
       console.log('Auth check failed:', error.response?.status || error.message);
-      return false;
+      return { authenticated: false };
     }
   }
 }

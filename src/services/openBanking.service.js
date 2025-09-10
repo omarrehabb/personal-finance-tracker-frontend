@@ -237,9 +237,37 @@ const generateSampleTransactions = (accountId, bankId, count = 30) => {
 
 class OpenBankingService {
   constructor() {
-    this.connectedBanks = new Set(JSON.parse(localStorage.getItem('connectedBanks') || '[]'));
-    this.connectedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]');
-    this.importedTransactions = JSON.parse(localStorage.getItem('importedTransactions') || '[]');
+    this.connectedBanks = new Set();
+    this.connectedAccounts = [];
+    this.importedTransactions = [];
+    this.loadFromStorage();
+  }
+
+  // Determine a per-user storage suffix for namespacing
+  getUserStorageSuffix() {
+    try {
+      const userStr = localStorage.getItem('authUser');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user && (user.id || user.username)) {
+          return `_${user.id || user.username}`;
+        }
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+    return '_guest';
+  }
+
+  // Load current user's state from localStorage
+  loadFromStorage() {
+    const suffix = this.getUserStorageSuffix();
+    const banks = localStorage.getItem(`connectedBanks${suffix}`);
+    const accounts = localStorage.getItem(`connectedAccounts${suffix}`);
+    const transactions = localStorage.getItem(`importedTransactions${suffix}`);
+    this.connectedBanks = new Set(JSON.parse(banks || '[]'));
+    this.connectedAccounts = JSON.parse(accounts || '[]');
+    this.importedTransactions = JSON.parse(transactions || '[]');
   }
 
   // Get list of available banks
@@ -270,6 +298,7 @@ class OpenBankingService {
 
   // Simulate OAuth flow for demo purposes
   async simulateOAuthFlow(bankId) {
+    this.loadFromStorage();
     // Simulate the OAuth redirect and callback
     return new Promise((resolve) => {
       // Show a simulated banking login
@@ -278,7 +307,7 @@ class OpenBankingService {
       setTimeout(() => {
         // Simulate successful connection
         this.connectedBanks.add(bankId);
-        localStorage.setItem('connectedBanks', JSON.stringify([...this.connectedBanks]));
+        this.updateLocalStorage();
         
         // Add sample accounts for this bank
         if (SAMPLE_ACCOUNTS[bankId]) {
@@ -289,7 +318,7 @@ class OpenBankingService {
           }));
           
           this.connectedAccounts.push(...newAccounts);
-          localStorage.setItem('connectedAccounts', JSON.stringify(this.connectedAccounts));
+          this.updateLocalStorage();
         }
         
         resolve({
@@ -310,6 +339,7 @@ class OpenBankingService {
       return response.data;
     } catch (error) {
       console.log('API not available, using stored accounts');
+      this.loadFromStorage();
       return this.connectedAccounts;
     }
   }
@@ -328,6 +358,7 @@ class OpenBankingService {
 
   // Simulate transaction sync
   async simulateTransactionSync(accountId = null) {
+    this.loadFromStorage();
     return new Promise((resolve) => {
       setTimeout(() => {
         let newTransactions = [];
@@ -345,8 +376,7 @@ class OpenBankingService {
 
         // Store imported transactions
         this.importedTransactions.push(...newTransactions);
-        localStorage.setItem('importedTransactions', JSON.stringify(this.importedTransactions));
-        localStorage.setItem('connectedAccounts', JSON.stringify(this.connectedAccounts));
+        this.updateLocalStorage();
 
         resolve({
           success: true,
@@ -366,6 +396,7 @@ class OpenBankingService {
       return response.data;
     } catch (error) {
       console.log('API not available, using stored transactions');
+      this.loadFromStorage();
       return accountId 
         ? this.importedTransactions.filter(t => t.account_id === accountId)
         : this.importedTransactions;
@@ -389,6 +420,7 @@ class OpenBankingService {
       console.log('API not available, simulating disconnect');
       
       // Simulate disconnect
+      this.loadFromStorage();
       this.connectedBanks.delete(bankId);
       this.connectedAccounts = this.connectedAccounts.filter(acc => acc.bank_id !== bankId);
       this.importedTransactions = this.importedTransactions.filter(t => t.bank_id !== bankId);
@@ -404,18 +436,21 @@ class OpenBankingService {
 
   // Update local storage
   updateLocalStorage() {
-    localStorage.setItem('connectedBanks', JSON.stringify([...this.connectedBanks]));
-    localStorage.setItem('connectedAccounts', JSON.stringify(this.connectedAccounts));
-    localStorage.setItem('importedTransactions', JSON.stringify(this.importedTransactions));
+    const suffix = this.getUserStorageSuffix();
+    localStorage.setItem(`connectedBanks${suffix}`, JSON.stringify([...this.connectedBanks]));
+    localStorage.setItem(`connectedAccounts${suffix}`, JSON.stringify(this.connectedAccounts));
+    localStorage.setItem(`importedTransactions${suffix}`, JSON.stringify(this.importedTransactions));
   }
 
   // Check if bank is connected
   isBankConnected(bankId) {
+    this.loadFromStorage();
     return this.connectedBanks.has(bankId);
   }
 
   // Get accounts for a specific bank
   getAccountsForBank(bankId) {
+    this.loadFromStorage();
     return this.connectedAccounts.filter(account => account.bank_id === bankId);
   }
 

@@ -20,21 +20,23 @@ export const AuthProvider = ({ children }) => {
     // Check if user is authenticated on component mount
     const checkAuth = async () => {
       try {
-        const isAuthenticated = await authService.isAuthenticated();
-        
-        if (isAuthenticated) {
+        const auth = await authService.isAuthenticated();
+        if (auth.authenticated) {
           // Get 2FA status
           const twoFactorStatus = await authService.checkTwoFactorStatus();
           setHasTwoFactor(twoFactorStatus.has_2fa);
-          
-          setCurrentUser({ isAuthenticated: true });
+          // Persist user info for namespacing local data
+          setCurrentUser({ isAuthenticated: true, ...auth.user });
+          localStorage.setItem('authUser', JSON.stringify(auth.user));
         } else {
           setCurrentUser(null);
+          localStorage.removeItem('authUser');
         }
       } catch (err) {
         console.error('Auth check error:', err);
         setError('Authentication check failed');
         setCurrentUser(null);
+        localStorage.removeItem('authUser');
       } finally {
         setLoading(false);
       }
@@ -54,7 +56,14 @@ export const AuthProvider = ({ children }) => {
         setHasTwoFactor(true);
         return { success: true, twoFactorRequired: true };
       } else {
-        setCurrentUser({ isAuthenticated: true });
+        // Fetch user details and persist
+        const auth = await authService.isAuthenticated();
+        if (auth.authenticated) {
+          setCurrentUser({ isAuthenticated: true, ...auth.user });
+          localStorage.setItem('authUser', JSON.stringify(auth.user));
+        } else {
+          setCurrentUser({ isAuthenticated: true });
+        }
         return { success: true, twoFactorRequired: false };
       }
     } catch (err) {
@@ -71,7 +80,13 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.verifyTwoFactor(token);
       
       if (response.success) {
-        setCurrentUser({ isAuthenticated: true });
+        const auth = await authService.isAuthenticated();
+        if (auth.authenticated) {
+          setCurrentUser({ isAuthenticated: true, ...auth.user });
+          localStorage.setItem('authUser', JSON.stringify(auth.user));
+        } else {
+          setCurrentUser({ isAuthenticated: true });
+        }
       }
       
       return response;
@@ -87,6 +102,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.logout();
       setCurrentUser(null);
+      localStorage.removeItem('authUser');
     } catch (err) {
       console.error('Logout error:', err);
       setError('Logout failed');
