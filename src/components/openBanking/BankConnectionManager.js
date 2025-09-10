@@ -302,7 +302,11 @@ const BankConnectionManager = () => {
                         height: 48
                       }}
                     >
-                      {bank?.logo || '🏦'}
+                      {bank?.logoUrl ? (
+                        <img src={bank.logoUrl} alt={bank?.name || 'Bank'} style={{ width: '70%', height: '70%' }} />
+                      ) : (
+                        bank?.logo || '🏦'
+                      )}
                     </Avatar>
                     <Box>
                       <Typography variant="h6">{bank?.name || bankId}</Typography>
@@ -434,7 +438,11 @@ const BankConnectionManager = () => {
                           fontSize: '1.5rem'
                         }}
                       >
-                        {bank.logo}
+                        {bank.logoUrl ? (
+                          <img src={bank.logoUrl} alt={bank.name} style={{ width: '70%', height: '70%' }} />
+                        ) : (
+                          bank.logo || '🏦'
+                        )}
                       </Avatar>
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="h6">{bank.name}</Typography>
@@ -542,7 +550,11 @@ const BankConnectionManager = () => {
                     >
                       <CardContent sx={{ display: 'flex', alignItems: 'center', py: 2 }}>
                         <Avatar sx={{ mr: 2, bgcolor: bank.color }}>
-                          {bank.logo}
+                          {bank.logoUrl ? (
+                            <img src={bank.logoUrl} alt={bank.name} style={{ width: '70%', height: '70%' }} />
+                          ) : (
+                            bank.logo || '🏦'
+                          )}
                         </Avatar>
                         <Box>
                           <Typography variant="subtitle1">{bank.name}</Typography>
@@ -567,7 +579,11 @@ const BankConnectionManager = () => {
               
               <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
                 <Avatar sx={{ mr: 2, bgcolor: selectedBank.color, width: 48, height: 48 }}>
-                  {selectedBank.logo}
+                  {selectedBank.logoUrl ? (
+                    <img src={selectedBank.logoUrl} alt={selectedBank.name} style={{ width: '70%', height: '70%' }} />
+                  ) : (
+                    selectedBank.logo || '🏦'
+                  )}
                 </Avatar>
                 <Box>
                   <Typography variant="h6">{selectedBank.name}</Typography>

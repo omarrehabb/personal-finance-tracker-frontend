@@ -10,149 +10,179 @@ const OPEN_BANKING_ENDPOINTS = {
   TRANSACTIONS: '/api/open-banking/transactions/',
 };
 
-// Simulated bank data with realistic branding
+// Simulated bank data (Germany) with logo URLs
+// Logos are pulled via Clearbit's public logo endpoint at runtime
 const SIMULATED_BANKS = [
   {
-    id: 'chase',
-    name: 'JPMorgan Chase',
-    logo: '🏦',
-    color: '#117ACA',
+    id: 'deutsche_bank',
+    name: 'Deutsche Bank',
+    logoUrl: 'https://logo.clearbit.com/db.com',
+    color: '#0018A8',
     supported: true,
-    description: 'Connect your Chase checking and savings accounts'
+    description: 'Connect your Deutsche Bank accounts'
   },
   {
-    id: 'bofa',
-    name: 'Bank of America', 
-    logo: '🇺🇸',
-    color: '#E31837',
+    id: 'commerzbank',
+    name: 'Commerzbank',
+    logoUrl: 'https://logo.clearbit.com/commerzbank.de',
+    color: '#FFCC00',
     supported: true,
-    description: 'Link your Bank of America accounts'
+    description: 'Connect your Commerzbank accounts'
   },
   {
-    id: 'wells_fargo',
-    name: 'Wells Fargo',
-    logo: '🌊',
-    color: '#D71921',
+    id: 'sparkasse',
+    name: 'Sparkasse',
+    logoUrl: 'https://logo.clearbit.com/sparkasse.de',
+    color: '#E2001A',
     supported: true,
-    description: 'Connect your Wells Fargo banking accounts'
+    description: 'Connect your Sparkasse accounts'
   },
   {
-    id: 'citi',
-    name: 'Citibank',
-    logo: '🏛️',
-    color: '#056DAE',
+    id: 'volksbank',
+    name: 'Volksbank (VR Bank)',
+    logoUrl: 'https://logo.clearbit.com/volksbank.de',
+    color: '#003DA5',
     supported: true,
-    description: 'Link your Citi checking and credit accounts'
+    description: 'Connect your Volksbank/VR accounts'
   },
   {
-    id: 'capital_one',
-    name: 'Capital One',
-    logo: '💳',
-    color: '#004879',
+    id: 'dkb',
+    name: 'DKB',
+    logoUrl: 'https://logo.clearbit.com/dkb.de',
+    color: '#00A3E0',
     supported: true,
-    description: 'Connect your Capital One accounts'
+    description: 'Connect your DKB accounts'
   },
   {
-    id: 'usbank',
-    name: 'U.S. Bank',
-    logo: '🏪',
-    color: '#0F2B5B',
+    id: 'ing',
+    name: 'ING',
+    logoUrl: 'https://logo.clearbit.com/ing.de',
+    color: '#FF6200',
+    supported: true,
+    description: 'Connect your ING accounts'
+  },
+  {
+    id: 'n26',
+    name: 'N26',
+    logoUrl: 'https://logo.clearbit.com/n26.com',
+    color: '#1A8D82',
+    supported: true,
+    description: 'Connect your N26 accounts'
+  },
+  {
+    id: 'postbank',
+    name: 'Postbank',
+    logoUrl: 'https://logo.clearbit.com/postbank.de',
+    color: '#005CA9',
     supported: false,
-    description: 'Coming soon - U.S. Bank integration'
+    description: 'Coming soon - Postbank integration'
   }
 ];
 
 // Simulated account types and sample data
 const SAMPLE_ACCOUNTS = {
-  chase: [
+  deutsche_bank: [
     {
-      id: 'chase_checking_001',
-      bank_id: 'chase',
-      name: 'Chase Total Checking',
+      id: 'db_giro_001',
+      bank_id: 'deutsche_bank',
+      name: 'Girokonto',
       type: 'checking',
       balance: 2847.32,
-      account_number: '****1234',
-      currency: 'USD'
+      account_number: 'DE**1234',
+      currency: 'EUR'
     },
     {
-      id: 'chase_savings_001', 
-      bank_id: 'chase',
-      name: 'Chase Savings',
+      id: 'db_sparen_001', 
+      bank_id: 'deutsche_bank',
+      name: 'SparKonto',
       type: 'savings',
       balance: 15420.78,
-      account_number: '****5678',
-      currency: 'USD'
+      account_number: 'DE**5678',
+      currency: 'EUR'
     }
   ],
-  bofa: [
+  commerzbank: [
     {
-      id: 'bofa_checking_001',
-      bank_id: 'bofa',
-      name: 'Advantage Plus Banking',
+      id: 'cb_giro_001',
+      bank_id: 'commerzbank',
+      name: 'Girokonto Klassik',
       type: 'checking', 
       balance: 1653.45,
-      account_number: '****9876',
-      currency: 'USD'
+      account_number: 'DE**9876',
+      currency: 'EUR'
     },
     {
-      id: 'bofa_credit_001',
-      bank_id: 'bofa',
-      name: 'Cash Rewards Credit Card',
+      id: 'cb_kredit_001',
+      bank_id: 'commerzbank',
+      name: 'Kreditkarte',
       type: 'credit',
       balance: -892.15,
-      account_number: '****5432',
-      currency: 'USD'
+      account_number: 'DE**5432',
+      currency: 'EUR'
     }
   ],
-  wells_fargo: [
+  sparkasse: [
     {
-      id: 'wf_checking_001',
-      bank_id: 'wells_fargo',
-      name: 'Everyday Checking',
+      id: 'spk_giro_001',
+      bank_id: 'sparkasse',
+      name: 'Girokonto',
       type: 'checking',
       balance: 3205.67,
-      account_number: '****7890',
-      currency: 'USD'
+      account_number: 'DE**7890',
+      currency: 'EUR'
     }
   ],
-  citi: [
+  volksbank: [
     {
-      id: 'citi_checking_001',
-      bank_id: 'citi',
-      name: 'Citibank Basic Banking',
+      id: 'vb_giro_001',
+      bank_id: 'volksbank',
+      name: 'VR-Girokonto',
       type: 'checking',
       balance: 756.89,
-      account_number: '****2468',
-      currency: 'USD'
-    },
-    {
-      id: 'citi_credit_001',
-      bank_id: 'citi',
-      name: 'Citi Double Cash Card',
-      type: 'credit',
-      balance: -1247.63,
-      account_number: '****1357',
-      currency: 'USD'
+      account_number: 'DE**2468',
+      currency: 'EUR'
     }
   ],
-  capital_one: [
+  dkb: [
     {
-      id: 'cap1_checking_001',
-      bank_id: 'capital_one',
-      name: '360 Checking',
+      id: 'dkb_cash_001',
+      bank_id: 'dkb',
+      name: 'DKB-Cash',
       type: 'checking',
       balance: 4567.23,
-      account_number: '****8642',
-      currency: 'USD'
+      account_number: 'DE**8642',
+      currency: 'EUR'
     },
     {
-      id: 'cap1_savings_001',
-      bank_id: 'capital_one',
-      name: '360 Performance Savings',
+      id: 'dkb_visa_001',
+      bank_id: 'dkb',
+      name: 'DKB-VISA',
+      type: 'credit',
+      balance: -247.63,
+      account_number: 'DE**1357',
+      currency: 'EUR'
+    }
+  ],
+  ing: [
+    {
+      id: 'ing_giro_001',
+      bank_id: 'ing',
+      name: 'Extra-Konto',
       type: 'savings',
       balance: 8934.56,
-      account_number: '****9753',
-      currency: 'USD'
+      account_number: 'DE**9753',
+      currency: 'EUR'
+    }
+  ],
+  n26: [
+    {
+      id: 'n26_standard_001',
+      bank_id: 'n26',
+      name: 'N26 Standard',
+      type: 'checking',
+      balance: 2050.12,
+      account_number: 'DE**4321',
+      currency: 'EUR'
     }
   ]
 };
