@@ -56,29 +56,29 @@ A modern, responsive web application for managing personal finances. Built with 
 ### Setup
 ```bash
 git clone <repository-url>
-cd personal-finance-frontend
+cd personal-finance-tracker-frontend
 npm install
 npm start
+```
 
 App runs on http://localhost:3000 by default.
 
 ## 📊 Screenshots
 
 ### Dashboard
-Place your new UI screenshots under `docs/screenshots/` and reference here, for example:
-
-![Dashboard](docs/screenshots/dashboard.png)
+<img alt="Dashboard" src="docs/screenshots/dashboard.png" width="900" />
 
 ### Login Screen
-![Login](docs/screenshots/login.png)
+<img alt="Login" src="docs/screenshots/login.png" width="500" />
 
 ### Transaction List
-![Transactions](docs/screenshots/transactions.png)
+<img alt="Transactions" src="docs/screenshots/transactions.png" width="900" />
 
 ### Banking
-![Banking](docs/screenshots/banking.png)
+<img alt="Banking" src="docs/screenshots/banking.png" width="900" />
 
-🏗 Project Structure
+## 🏗 Project Structure
+```
 src/
 ├── components/
 │   ├── auth/              # Login, Register, 2FA setup
@@ -89,7 +89,6 @@ src/
 ├── services/              # API calls (auth, banking, transactions)
 ├── utils/                 # Formatters, helpers
 └── App.js                 # Main entry
-
-
+```
 
 Built with ❤️ using React & Material-UI
