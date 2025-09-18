@@ -10,7 +10,8 @@ const CURRENCIES = {
   'CHF': { symbol: 'CHF', name: 'Swiss Franc', locale: 'de-CH' },
   'CNY': { symbol: '¥', name: 'Chinese Yuan', locale: 'zh-CN' },
   'INR': { symbol: '₹', name: 'Indian Rupee', locale: 'hi-IN' },
-  'BRL': { symbol: 'R$', name: 'Brazilian Real', locale: 'pt-BR' }
+  'BRL': { symbol: 'R$', name: 'Brazilian Real', locale: 'pt-BR' },
+  'EGP': { symbol: '£', name: 'Egyptian Pound', locale: 'en-EG' }
 };
 
 const CurrencyContext = createContext();

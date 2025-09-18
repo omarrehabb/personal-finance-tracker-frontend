@@ -28,7 +28,6 @@ import {
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
-  Security as SecurityIcon,
   AccountBalance as BudgetIcon,
   AccountBalance as BankIcon
 } from '@mui/icons-material';
@@ -193,12 +192,6 @@ const NavBar = () => {
                   <SettingsIcon fontSize="small" />
                 </ListItemIcon>
                 Settings
-              </MenuItem>
-              <MenuItem onClick={() => { handleClose(); navigate('/settings/security'); }}>
-                <ListItemIcon>
-                  <SecurityIcon fontSize="small" />
-                </ListItemIcon>
-                Security {hasTwoFactor && '(2FA Enabled)'}
               </MenuItem>
               <Divider />
               <MenuItem onClick={handleLogout}>

@@ -18,11 +18,13 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import budgetService from '../../services/budget.service';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const BudgetSummaryWidget = ({ transactions = [] }) => {
   const [budgetStatus, setBudgetStatus] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { formatCurrency } = useCurrency();
 
   useEffect(() => {
     loadBudgetData();
@@ -87,14 +89,7 @@ const BudgetSummaryWidget = ({ transactions = [] }) => {
     }
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
+  // Use app-wide currency formatter from context
 
   const getOverallStatus = () => {
     if (budgetStatus.length === 0) return null;

@@ -282,13 +282,14 @@ const BankConnectionManager = () => {
                     <Avatar 
                       sx={{ 
                         mr: 2, 
-                        bgcolor: bank?.color || '#667eea',
+                        bgcolor: '#ffffff',
+                        border: `1px solid ${bank?.color || '#667eea'}`,
                         width: 48,
                         height: 48
                       }}
                     >
                       {bank?.logoUrl ? (
-                        <img src={bank.logoUrl} alt={bank?.name || 'Bank'} style={{ width: '70%', height: '70%' }} />
+                        <img src={bank.logoUrl} alt={bank?.name || 'Bank'} style={{ width: '70%', height: '70%', objectFit: 'contain', display: 'block' }} />
                       ) : (
                         bank?.logo || '🏦'
                       )}
@@ -534,9 +535,9 @@ const BankConnectionManager = () => {
                       onClick={() => setSelectedBank(bank)}
                     >
                       <CardContent sx={{ display: 'flex', alignItems: 'center', py: 2 }}>
-                        <Avatar sx={{ mr: 2, bgcolor: bank.color }}>
+                        <Avatar sx={{ mr: 2, bgcolor: '#ffffff', border: `1px solid ${bank.color}` }}>
                           {bank.logoUrl ? (
-                            <img src={bank.logoUrl} alt={bank.name} style={{ width: '70%', height: '70%' }} />
+                            <img src={bank.logoUrl} alt={bank.name} style={{ width: '70%', height: '70%', objectFit: 'contain', display: 'block' }} />
                           ) : (
                             bank.logo || '🏦'
                           )}
@@ -563,9 +564,9 @@ const BankConnectionManager = () => {
               </Alert>
               
               <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Avatar sx={{ mr: 2, bgcolor: selectedBank.color, width: 48, height: 48 }}>
+                <Avatar sx={{ mr: 2, bgcolor: '#ffffff', border: `1px solid ${selectedBank.color}`, width: 48, height: 48 }}>
                   {selectedBank.logoUrl ? (
-                    <img src={selectedBank.logoUrl} alt={selectedBank.name} style={{ width: '70%', height: '70%' }} />
+                    <img src={selectedBank.logoUrl} alt={selectedBank.name} style={{ width: '70%', height: '70%', objectFit: 'contain', display: 'block' }} />
                   ) : (
                     selectedBank.logo || '🏦'
                   )}

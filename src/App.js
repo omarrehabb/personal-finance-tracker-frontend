@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import BankConnectionManager from './components/openBanking/BankConnectionManager';
@@ -24,47 +24,115 @@ import { AuthProvider } from './contexts/AuthContext';
 // Currency Provider
 import { CurrencyProvider } from './contexts/CurrencyContext';
 
-// Enhanced Modern Theme
-const theme = createTheme({
+// Helpers to determine theme mode
+const getStoredTheme = () => {
+  try {
+    const saved = localStorage.getItem('userSettings');
+    if (saved) {
+      const { theme } = JSON.parse(saved);
+      return theme || 'light';
+    }
+  } catch {}
+  return 'light';
+};
+
+const getEffectiveMode = (stored) => {
+  if (stored === 'auto') {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return stored || 'light';
+};
+
+function App() {
+  const [storedTheme, setStoredTheme] = useState(getStoredTheme());
+  const mode = getEffectiveMode(storedTheme);
+
+  useEffect(() => {
+    const onThemeChanged = () => setStoredTheme(getStoredTheme());
+    window.addEventListener('themeChanged', onThemeChanged);
+
+    const mql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    const onSystemChange = () => setStoredTheme(getStoredTheme());
+    if (mql && mql.addEventListener) mql.addEventListener('change', onSystemChange);
+
+    return () => {
+      window.removeEventListener('themeChanged', onThemeChanged);
+      if (mql && mql.removeEventListener) mql.removeEventListener('change', onSystemChange);
+    };
+  }, []);
+
+  const theme = useMemo(() => createTheme({
   palette: {
-    mode: 'light',
-    primary: {
-      main: '#667eea', // Modern purple-blue
+    mode,
+    primary: mode === 'dark' ? {
+      main: '#7b88ea',
+      light: '#9aa6f2',
+      dark: '#5a6fd8',
+      contrastText: '#ffffff',
+    } : {
+      main: '#667eea',
       light: '#8fa4f3',
       dark: '#4c6cd4',
       contrastText: '#ffffff',
     },
-    secondary: {
-      main: '#f093fb', // Soft pink
+    secondary: mode === 'dark' ? {
+      main: '#c084f5',
+      light: '#d6a8fb',
+      dark: '#a66bee',
+      contrastText: '#ffffff',
+    } : {
+      main: '#f093fb',
       light: '#f4b3fc',
       dark: '#ec6bfa',
       contrastText: '#ffffff',
     },
-    success: {
-      main: '#4dd0e1', // Cyan for income
+    success: mode === 'dark' ? {
+      main: '#22b8a9',
+      light: '#4bd1c4',
+      dark: '#1a9a8e',
+    } : {
+      main: '#4dd0e1',
       light: '#7de3f0',
       dark: '#26c6da',
     },
-    error: {
-      main: '#ff6b9d', // Soft red for expenses
+    error: mode === 'dark' ? {
+      main: '#f27289',
+      light: '#f58ea1',
+      dark: '#e24e6a',
+    } : {
+      main: '#ff6b9d',
       light: '#ff8fb3',
       dark: '#ff4081',
     },
-    warning: {
+    warning: mode === 'dark' ? {
+      main: '#f59e42',
+      light: '#f9b266',
+      dark: '#d9822a',
+    } : {
       main: '#ffa726',
       light: '#ffb74d',
       dark: '#f57c00',
     },
-    info: {
+    info: mode === 'dark' ? {
+      main: '#60a5fa',
+      light: '#86b9fb',
+      dark: '#3b82f6',
+    } : {
       main: '#42a5f5',
       light: '#64b5f6',
       dark: '#1976d2',
     },
-    background: {
-      default: '#f8fafc', // Very light blue-grey
+    background: mode === 'dark' ? {
+      default: '#0b1020',
+      paper: '#141a2a',
+    } : {
+      default: '#f8fafc',
       paper: '#ffffff',
     },
-    text: {
+    text: mode === 'dark' ? {
+      primary: '#e5e7eb',
+      secondary: '#9ca3af',
+    } : {
       primary: '#1a202c',
       secondary: '#718096',
     },
@@ -121,12 +189,16 @@ const theme = createTheme({
     // AppBar enhancements
     MuiAppBar: {
       styleOverrides: {
-        root: {
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
+        root: ({ theme }) => ({
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, #1a2235 0%, #232b3e 100%)'
+            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 4px 16px rgba(0,0,0,0.4)'
+            : '0 4px 20px rgba(102, 126, 234, 0.3)',
           backdropFilter: 'blur(10px)',
-          borderRadius: 0, // Remove rounded corners
-        },
+          borderRadius: 0,
+        }),
       },
     },
     // Button enhancements (but not for AppBar buttons)
@@ -211,9 +283,7 @@ const theme = createTheme({
       },
     },
   },
-});
-
-function App() {
+  }), [mode]);
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

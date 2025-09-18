@@ -45,7 +45,8 @@ const CURRENCIES = [
   { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', flag: '🇨🇭' },
   { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', flag: '🇨🇳' },
   { code: 'INR', name: 'Indian Rupee', symbol: '₹', flag: '🇮🇳' },
-  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', flag: '🇧🇷' }
+  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', flag: '🇧🇷' },
+  { code: 'EGP', name: 'Egyptian Pound', symbol: '£', flag: '🇪🇬' }
 ];
 
 const THEMES = [
@@ -92,6 +93,11 @@ const Settings = () => {
     // Trigger a currency change event for the app
     window.dispatchEvent(new CustomEvent('currencyChanged', { 
       detail: { currency: settings.currency } 
+    }));
+
+    // Notify app to update theme immediately
+    window.dispatchEvent(new CustomEvent('themeChanged', {
+      detail: { theme: settings.theme }
     }));
   };
 
@@ -217,69 +223,44 @@ const Settings = () => {
             </Typography>
             
             <List sx={{ py: 0 }}>
-              <ListItem sx={{ px: 0 }}>
+              <ListItem
+                sx={{ px: 0 }}
+                secondaryAction={
+                  <Switch
+                    edge="end"
+                    checked={settings.notifications}
+                    onChange={(e) => handleSettingChange('notifications', e.target.checked)}
+                    inputProps={{ 'aria-label': 'toggle push notifications' }}
+                  />
+                }
+              >
                 <ListItemText
                   primary="Push Notifications"
                   secondary="Get notified about budget alerts and transaction imports"
                 />
-                <ListItemSecondaryAction>
-                  <Switch
-                    checked={settings.notifications}
-                    onChange={(e) => handleSettingChange('notifications', e.target.checked)}
-                  />
-                </ListItemSecondaryAction>
               </ListItem>
-              
-              <ListItem sx={{ px: 0 }}>
+
+              <ListItem
+                sx={{ px: 0 }}
+                secondaryAction={
+                  <Switch
+                    edge="end"
+                    checked={settings.emailNotifications}
+                    onChange={(e) => handleSettingChange('emailNotifications', e.target.checked)}
+                    inputProps={{ 'aria-label': 'toggle email notifications' }}
+                  />
+                }
+              >
                 <ListItemText
                   primary="Email Notifications"
                   secondary="Receive weekly summaries and important updates"
                 />
-                <ListItemSecondaryAction>
-                  <Switch
-                    checked={settings.emailNotifications}
-                    onChange={(e) => handleSettingChange('emailNotifications', e.target.checked)}
-                  />
-                </ListItemSecondaryAction>
               </ListItem>
             </List>
           </Paper>
         </Grid>
 
-        {/* Banking */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-              <SecurityIcon sx={{ mr: 1 }} />
-              Banking & Security
-            </Typography>
-            
-            <List sx={{ py: 0 }}>
-              <ListItem sx={{ px: 0 }}>
-                <ListItemText
-                  primary="Auto-Sync Accounts"
-                  secondary="Automatically sync transactions from connected banks"
-                />
-                <ListItemSecondaryAction>
-                  <Switch
-                    checked={settings.autoSync}
-                    onChange={(e) => handleSettingChange('autoSync', e.target.checked)}
-                  />
-                </ListItemSecondaryAction>
-              </ListItem>
-            </List>
-            
-            <Divider sx={{ my: 2 }} />
-            
-            <Button
-              variant="outlined"
-              onClick={() => navigate('/settings/security')}
-              sx={{ width: '100%' }}
-            >
-              Security Settings
-            </Button>
-          </Paper>
-        </Grid>
+        {/* (Removed Banking & Security section) */}
       </Grid>
 
       {/* Quick Actions */}
@@ -300,19 +281,17 @@ const Settings = () => {
             </Card>
           </Grid>
           
+          {/* Quick jump to Bank Connections kept or remove if not ready */}
+          {/*
           <Grid item xs={12} sm={6} md={3}>
-            <Card 
-              sx={{ cursor: 'pointer', '&:hover': { boxShadow: 2 } }}
-              onClick={() => navigate('/open-banking')}
-            >
+            <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 2 } }} onClick={() => navigate('/open-banking')}>
               <CardContent sx={{ textAlign: 'center' }}>
                 <SecurityIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="subtitle2">
-                  Bank Connections
-                </Typography>
+                <Typography variant="subtitle2">Bank Connections</Typography>
               </CardContent>
             </Card>
           </Grid>
+          */}
           
           <Grid item xs={12} sm={6} md={3}>
             <Card 
@@ -328,19 +307,7 @@ const Settings = () => {
             </Card>
           </Grid>
           
-          <Grid item xs={12} sm={6} md={3}>
-            <Card 
-              sx={{ cursor: 'pointer', '&:hover': { boxShadow: 2 } }}
-              onClick={() => navigate('/settings/security')}
-            >
-              <CardContent sx={{ textAlign: 'center' }}>
-                <SecurityIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="subtitle2">
-                  Two-Factor Auth
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+          {/* Removed Two-Factor Auth quick action (not implemented) */}
         </Grid>
       </Paper>
 
