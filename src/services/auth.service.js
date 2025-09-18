@@ -1,8 +1,9 @@
 import api from './api';
 
 const AUTH_ENDPOINTS = {
-  LOGIN: '/api-auth/login/',  // Using consistent endpoint
-  LOGOUT: '/api-auth/logout/',
+  LOGIN: '/api/auth/login/',
+  LOGOUT: '/api/auth/logout/',
+  CSRF: '/api/auth/csrf/',
   CHECK_2FA: '/2fa/status/',
   SETUP_2FA: '/2fa/create/',
   VERIFY_2FA: '/2fa/verify/',
@@ -17,17 +18,13 @@ class AuthService {
       console.log('Password provided:', password ? 'YES' : 'NO');
       
       // First, get the CSRF token
-      console.log('Getting CSRF token from:', AUTH_ENDPOINTS.LOGIN);
-      const csrfResponse = await api.get(AUTH_ENDPOINTS.LOGIN);
+      console.log('Getting CSRF token from:', AUTH_ENDPOINTS.CSRF);
+      const csrfResponse = await api.get(AUTH_ENDPOINTS.CSRF);
       console.log('CSRF response status:', csrfResponse.status);
       
-      // Now submit the login form (URL-encoded to match Django form parser)
-      const formBody = new URLSearchParams();
-      formBody.append('username', username);
-      formBody.append('password', password);
-
-      console.log('Submitting login form to:', AUTH_ENDPOINTS.LOGIN);
-      const response = await api.post(AUTH_ENDPOINTS.LOGIN, formBody);
+      // Submit JSON body to our API login endpoint
+      console.log('Submitting login JSON to:', AUTH_ENDPOINTS.LOGIN);
+      const response = await api.post(AUTH_ENDPOINTS.LOGIN, { username, password });
       
       console.log('Login response status:', response.status);
       console.log('Login response headers:', response.headers);
@@ -40,8 +37,8 @@ class AuthService {
         throw new Error('Invalid username or password');
       }
       
-      // Django's login view can return 200 or 302 on success
-      if (response.status === 200 || response.status === 302) {
+      // Our API returns 200 JSON on success
+      if (response.status === 200 && response.data?.success) {
         console.log('Login appeared successful, checking response...');
         
         // Check if the response contains error indicators
@@ -84,13 +81,8 @@ class AuthService {
           }
         }
         
-        // If we can't determine from the response, assume success for now
-        console.log('Could not determine login status from response, assuming success');
-        console.log('=== LOGIN DEBUG END - SUCCESS (ASSUMED) ===');
-        return {
-          success: true,
-          twoFactorRequired: false,
-        };
+        console.log('=== LOGIN DEBUG END - SUCCESS ===');
+        return { success: true, twoFactorRequired: false };
       }
       
       console.log('Unexpected response status:', response.status);
@@ -110,7 +102,7 @@ class AuthService {
       }
       
       if (error.response?.status === 403) {
-        throw new Error('Account is disabled or locked');
+        throw new Error('CSRF validation failed. Please refresh and try again.');
       }
       
       if (error.response?.status === 429) {
