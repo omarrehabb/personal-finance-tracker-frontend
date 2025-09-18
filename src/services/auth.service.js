@@ -4,10 +4,10 @@ const AUTH_ENDPOINTS = {
   LOGIN: '/api/auth/login/',
   LOGOUT: '/api/auth/logout/',
   CSRF: '/api/auth/csrf/',
-  CHECK_2FA: '/2fa/status/',
-  SETUP_2FA: '/2fa/create/',
-  VERIFY_2FA: '/2fa/verify/',
-  DISABLE_2FA: '/2fa/delete/',
+  CHECK_2FA: '/api/2fa/status/',
+  SETUP_2FA: '/api/2fa/create/',
+  VERIFY_2FA: '/api/2fa/verify/',
+  DISABLE_2FA: '/api/2fa/delete/',
 };
 
 class AuthService {
