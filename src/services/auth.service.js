@@ -21,17 +21,13 @@ class AuthService {
       const csrfResponse = await api.get(AUTH_ENDPOINTS.LOGIN);
       console.log('CSRF response status:', csrfResponse.status);
       
-      // Now submit the login form with the CSRF token
-      const formData = new FormData();
-      formData.append('username', username);
-      formData.append('password', password);
-      
+      // Now submit the login form (URL-encoded to match Django form parser)
+      const formBody = new URLSearchParams();
+      formBody.append('username', username);
+      formBody.append('password', password);
+
       console.log('Submitting login form to:', AUTH_ENDPOINTS.LOGIN);
-      const response = await api.post(AUTH_ENDPOINTS.LOGIN, formData, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
+      const response = await api.post(AUTH_ENDPOINTS.LOGIN, formBody);
       
       console.log('Login response status:', response.status);
       console.log('Login response headers:', response.headers);
