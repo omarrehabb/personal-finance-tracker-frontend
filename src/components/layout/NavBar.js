@@ -16,7 +16,8 @@ import {
   ListItemText, 
   Divider,
   Avatar,
-  Tooltip
+  Tooltip,
+  Chip
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -41,7 +42,7 @@ const NavBar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, hasTwoFactor } = useAuth();
+  const { logout, hasTwoFactor, otpVerified } = useAuth();
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -157,7 +158,17 @@ const NavBar = () => {
             </Box>
           )}
           
-          <Box sx={{ ml: 2 }}>
+          <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            {hasTwoFactor && (
+              <Tooltip title={otpVerified ? 'Two‑factor: verified' : 'Two‑factor: pending verification'}>
+                <Chip
+                  label="2FA"
+                  size="small"
+                  color={otpVerified ? 'success' : 'warning'}
+                  variant={otpVerified ? 'filled' : 'outlined'}
+                />
+              </Tooltip>
+            )}
             <Tooltip title="Account settings">
               <IconButton
                 size="large"

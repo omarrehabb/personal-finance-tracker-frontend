@@ -9,31 +9,30 @@ import {
   Select,
   MenuItem,
   Switch,
-  FormControlLabel,
-  Divider,
   Alert,
   Button,
   Avatar,
   List,
   ListItem,
-  ListItemIcon,
   ListItemText,
-  ListItemSecondaryAction,
   Card,
   CardContent,
-  Grid
+  Grid,
+  Snackbar
 } from '@mui/material';
 import {
   Settings as SettingsIcon,
   AttachMoney as CurrencyIcon,
   Notifications as NotificationsIcon,
   Palette as ThemeIcon,
-  Language as LanguageIcon,
   Security as SecurityIcon,
   Save as SaveIcon,
   CheckCircle as CheckIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { useState as useReactState } from 'react';
+import authService from '../../services/auth.service';
 
 const CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$', flag: '🇺🇸' },
@@ -65,7 +64,12 @@ const Settings = () => {
     language: 'en'
   });
   const [saved, setSaved] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { hasTwoFactor } = useAuth();
+  const [updating2fa, setUpdating2fa] = useReactState(false);
 
   useEffect(() => {
     // Load settings from localStorage
@@ -73,7 +77,13 @@ const Settings = () => {
     if (savedSettings) {
       setSettings(JSON.parse(savedSettings));
     }
-  }, []);
+    if (location.state?.message) {
+      setToastMsg(location.state.message);
+      setToastOpen(true);
+      // Clear state to avoid showing again on back/forward
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const handleSettingChange = (key, value) => {
     setSettings(prev => ({
@@ -104,6 +114,7 @@ const Settings = () => {
   const selectedCurrency = CURRENCIES.find(c => c.code === settings.currency);
 
   return (
+    <>
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
@@ -137,11 +148,11 @@ const Settings = () => {
         </Alert>
       )}
 
-      <Grid container spacing={4}>
+      <Grid container spacing={4} alignItems="stretch">
         {/* Currency & Localization */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+          <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 0 }}>
               <CurrencyIcon sx={{ mr: 1 }} />
               Currency & Localization
             </Typography>
@@ -186,8 +197,8 @@ const Settings = () => {
 
         {/* Appearance */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+          <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 0 }}>
               <ThemeIcon sx={{ mr: 1 }} />
               Appearance
             </Typography>
@@ -214,10 +225,59 @@ const Settings = () => {
           </Paper>
         </Grid>
 
+        {/* Security & Two-Factor */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 0 }}>
+              <SecurityIcon sx={{ mr: 1 }} />
+              Security & Two-Factor
+            </Typography>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, gap: 1 }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  Two-Factor Authentication (TOTP)
+                </Typography>
+                <Typography variant="caption" color={hasTwoFactor ? 'success.main' : 'text.secondary'}>
+                  {hasTwoFactor ? 'Enabled' : 'Disabled'}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {hasTwoFactor ? (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    disabled={updating2fa}
+                    onClick={async () => {
+                      try {
+                        setUpdating2fa(true);
+                        await authService.disableTwoFactor();
+                        window.location.reload();
+                      } finally {
+                        setUpdating2fa(false);
+                      }
+                    }}
+                  >
+                    Disable 2FA
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    onClick={() => navigate('/setup-2fa')}
+                  >
+                    Enable 2FA
+                  </Button>
+                )}
+              </Box>
+            </Box>
+            
+          </Paper>
+        </Grid>
+
         {/* Notifications */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+          <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 0 }}>
               <NotificationsIcon sx={{ mr: 1 }} />
               Notifications
             </Typography>
@@ -331,6 +391,17 @@ const Settings = () => {
         </Button>
       </Box>
     </Container>
+    <Snackbar
+      open={toastOpen || saved}
+      autoHideDuration={3000}
+      onClose={() => { setToastOpen(false); setSaved(false); }}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+    >
+      <Alert onClose={() => { setToastOpen(false); setSaved(false); }} severity="success" sx={{ width: '100%' }}>
+        {toastOpen ? toastMsg : 'Settings saved successfully!'}
+      </Alert>
+    </Snackbar>
+    </>
   );
 };
 

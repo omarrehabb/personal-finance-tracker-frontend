@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Paper,
   Typography,
@@ -26,11 +26,7 @@ const BudgetSummaryWidget = ({ transactions = [] }) => {
   const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
 
-  useEffect(() => {
-    loadBudgetData();
-  }, [transactions]);
-
-  const loadBudgetData = async () => {
+  const loadBudgetData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -39,8 +35,7 @@ const BudgetSummaryWidget = ({ transactions = [] }) => {
         const budgetsData = await budgetService.getAllBudgets();
         
         // Calculate budget status (API response already includes calculated fields)
-        const status = budgetsData.slice(0, 4); // Show top 4 budgets
-        setBudgetStatus(status);
+        setBudgetStatus(budgetsData);
         
       } catch (apiError) {
         console.error('API failed, falling back to localStorage:', apiError);
@@ -54,7 +49,7 @@ const BudgetSummaryWidget = ({ transactions = [] }) => {
           
           // Calculate budget status using client-side logic
           const status = budgetService.calculateBudgetStatus(budgetsData, transactions);
-          setBudgetStatus(status.slice(0, 4));
+          setBudgetStatus(status);
         } else {
           // No budgets found
           setBudgetStatus([]);
@@ -67,7 +62,11 @@ const BudgetSummaryWidget = ({ transactions = [] }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [transactions]);
+
+  useEffect(() => {
+    loadBudgetData();
+  }, [loadBudgetData]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -183,7 +182,8 @@ const BudgetSummaryWidget = ({ transactions = [] }) => {
         </Alert>
       )}
 
-      {/* Budget Progress Bars */}
+      {/* Budget Progress Bars (scroll if long) */}
+      <Box sx={{ maxHeight: 230, overflowY: 'auto', pr: 1 }}>
       {budgetStatus.map((budget) => (
         <Box key={budget.id} sx={{ mb: 2.5 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -228,6 +228,7 @@ const BudgetSummaryWidget = ({ transactions = [] }) => {
           </Box>
         </Box>
       ))}
+      </Box>
 
       {/* Quick Stats */}
       <Box sx={{ 

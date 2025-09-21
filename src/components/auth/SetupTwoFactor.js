@@ -21,6 +21,7 @@ const SetupTwoFactor = () => {
   const [setupData, setSetupData] = useState(null);
   const [token, setToken] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
   const navigate = useNavigate();
   const { setupTwoFactor, verifyTwoFactor, error: authError } = useAuth();
 
@@ -43,19 +44,22 @@ const SetupTwoFactor = () => {
     e.preventDefault();
     
     if (!token || token.length !== 6) {
+      setVerifyError('Please enter the 6‑digit code.');
       return;
     }
     
     setVerifying(true);
-    
+    setVerifyError('');
     try {
       const response = await verifyTwoFactor(token);
-      
-      if (response.success) {
-        navigate('/settings', { state: { message: '2FA has been successfully enabled' } });
+      if (response?.success) {
+        navigate('/settings', { state: { message: 'Two‑factor authentication enabled' } });
+      } else {
+        setVerifyError('Invalid code. Please try again.');
       }
     } catch (err) {
       console.error('2FA verification error:', err);
+      setVerifyError('Invalid code. Please try again.');
     } finally {
       setVerifying(false);
     }
@@ -76,9 +80,9 @@ const SetupTwoFactor = () => {
           Set Up Two-Factor Authentication
         </Typography>
         
-        {authError && (
+        {(authError || verifyError) && (
           <Alert severity="error" sx={{ mb: 3 }}>
-            {authError}
+            {verifyError || authError}
           </Alert>
         )}
 
@@ -86,7 +90,13 @@ const SetupTwoFactor = () => {
           <Card sx={{ maxWidth: 350, width: '100%' }}>
             <CardMedia
               component="img"
-              image={setupData?.qr_code}
+              image={
+                setupData?.qr_svg ||
+                setupData?.qr_code ||
+                (setupData?.otpauth_url
+                  ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(setupData.otpauth_url)}`
+                  : undefined)
+              }
               alt="QR Code for 2FA setup"
               sx={{ p: 2, objectFit: 'contain' }}
             />
@@ -122,14 +132,17 @@ const SetupTwoFactor = () => {
             
             <Typography 
               variant="body2" 
-              sx={{ 
+              sx={(theme) => ({ 
                 fontFamily: 'monospace', 
                 p: 2, 
-                bgcolor: 'grey.100', 
+                bgcolor: theme.palette.mode === 'dark' ? 'grey.900' : 'grey.100', 
+                color: 'text.primary',
                 borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'divider',
                 mb: 3,
                 wordBreak: 'break-all'
-              }}
+              })}
             >
               {setupData?.secret_key}
             </Typography>
@@ -145,7 +158,9 @@ const SetupTwoFactor = () => {
                 autoComplete="off"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                inputProps={{ maxLength: 6, pattern: '[0-9]*' }}
+                inputProps={{ maxLength: 6, inputMode: 'numeric', pattern: '[0-9]*' }}
+                error={!!verifyError}
+                helperText={verifyError || 'Enter the code from your authenticator app'}
               />
               
               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>

@@ -1,6 +1,6 @@
 // src/components/auth/Login.js
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -13,6 +13,7 @@ import {
   Divider
 } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
+import GoogleIcon from '@mui/icons-material/Google';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -106,16 +107,29 @@ const Login = () => {
               or
             </Typography>
           </Divider>
-          
+
           <Button
             fullWidth
             variant="outlined"
-            component={Link}
+            component={RouterLink}
             to="/register"
             sx={{ mt: 1 }}
           >
             No account yet? Register now
           </Button>
+
+          <Button
+            fullWidth
+            variant="outlined"
+            component="a"
+            href={'/accounts/google/login/?process=login&next=/'}
+            startIcon={<img alt="Google" src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style={{ width: 18, height: 18 }} />}
+            sx={{ mt: 2 }}
+          >
+            Continue with Google
+          </Button>
+
+          {/* Removed extra 2FA login link */}
         </Box>
       </Paper>
     </Container>

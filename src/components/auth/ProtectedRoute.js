@@ -5,7 +5,7 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, hasTwoFactor, otpVerified } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -22,6 +22,11 @@ const ProtectedRoute = ({ children }) => {
   if (!currentUser) {
     // Redirect to login page, but save the location they were trying to access
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // If the user has 2FA enabled but hasn't verified this session, send to verify page
+  if (hasTwoFactor && otpVerified === false) {
+    return <Navigate to="/verify-2fa" state={{ from: location }} replace />;
   }
 
   return children;

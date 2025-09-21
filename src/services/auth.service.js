@@ -41,6 +41,12 @@ class AuthService {
       if (response.status === 200 && response.data?.success) {
         console.log('Login appeared successful, checking response...');
         
+        // If backend indicates 2FA is required, surface that immediately
+        if (response.data.two_factor_required === true) {
+          console.log('2FA required according to backend');
+          return { success: true, twoFactorRequired: true };
+        }
+
         // Check if the response contains error indicators
         if (response.data && typeof response.data === 'string') {
           console.log('Checking response for error indicators...');

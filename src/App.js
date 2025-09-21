@@ -295,6 +295,12 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/verify-2fa" element={<TwoFactorAuth />} />
+            <Route path="/setup-2fa" element={
+              <ProtectedRoute>
+                <NavBar />
+                <SetupTwoFactor />
+              </ProtectedRoute>
+            } />
 
             {/* Open Banking Routes */}
             <Route path="/open-banking" element={

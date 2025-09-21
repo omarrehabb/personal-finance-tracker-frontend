@@ -13,7 +13,10 @@ import {
   Chip,
   Fade,
   Grow,
-  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import { 
   Add as AddIcon,
@@ -22,27 +25,29 @@ import {
   AccountBalanceWallet as BalanceIcon,
   Receipt as TransactionIcon,
   ShowChart as ChartIcon,
-  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import transactionService from '../../services/transaction.service';
 import BudgetSummaryWidget from '../budgets/BudgetSummaryWidget';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useAuth } from '../../contexts/AuthContext';
+// Removed refresh button
 
 const COLORS = ['#667eea', '#f093fb', '#4dd0e1', '#ff6b9d', '#ffa726', '#42a5f5'];
 
 const Dashboard = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  // no manual refresh state
   const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
+  const { hasTwoFactor } = useAuth();
+  const [show2FAPrompt, setShow2FAPrompt] = useState(false);
 
-  const loadDashboardData = useCallback(async (showRefreshLoader = false) => {
+  const loadDashboardData = useCallback(async () => {
     try {
-      if (showRefreshLoader) setRefreshing(true);
-      else setLoading(true);
+      setLoading(true);
       
       // Try to get profile first
       let profileData = null;
@@ -76,13 +81,21 @@ const Dashboard = () => {
       console.error('Error loading dashboard data:', err);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, []);
+
+  // removed manual refresh handler
 
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('dismiss2fa');
+    if (!hasTwoFactor && !dismissed) {
+      setShow2FAPrompt(true);
+    }
+  }, [hasTwoFactor]);
 
   const getExpensesByCategory = () => {
     if (!profile?.transactions) return [];
@@ -194,7 +207,7 @@ const Dashboard = () => {
               </Typography>
             </Box>
             
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               
               
               <Button
@@ -222,6 +235,22 @@ const Dashboard = () => {
           </Box>
         </Paper>
       </Fade>
+
+      {/* 2FA Prompt */}
+      <Dialog open={show2FAPrompt} onClose={() => setShow2FAPrompt(false)}>
+        <DialogTitle>Protect your account with 2FA</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            Add an extra layer of security by enabling two‑factor authentication (TOTP). You can set this up now or later from Settings.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { localStorage.setItem('dismiss2fa', '1'); setShow2FAPrompt(false); }}>Maybe later</Button>
+          <Button variant="contained" onClick={() => { setShow2FAPrompt(false); navigate('/setup-2fa'); }}>
+            Enable 2FA
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -400,13 +429,13 @@ const Dashboard = () => {
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       py: 3,
-                      borderBottom: index === recentTransactions.length - 1 ? 'none' : '1px solid #f0f0f0',
-                      '&:hover': {
-                        backgroundColor: '#f8fafc',
+                      borderBottom: (theme) => index === recentTransactions.length - 1 ? 'none' : `1px solid ${theme.palette.divider}`,
+                      '&:hover': (theme) => ({
+                        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : '#f8fafc',
                         borderRadius: 2,
                         transform: 'translateX(4px)',
                         transition: 'all 0.2s ease-in-out'
-                      }
+                      })
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>

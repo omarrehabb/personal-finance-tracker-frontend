@@ -1,8 +1,12 @@
 // src/services/api.js
 import axios from 'axios';
 
-// Choose base URL: use same-origin in production, localhost in dev
-const baseURL = process.env.REACT_APP_API_BASE || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000');
+// Base URL: prefer same-origin (works with dev proxy); allow override via REACT_APP_API_BASE
+let baseURL = process.env.REACT_APP_API_BASE ?? '';
+if (!baseURL && process.env.NODE_ENV !== 'production') {
+  // If running on CRA dev server, keep same-origin so setupProxy forwards to Django
+  baseURL = (typeof window !== 'undefined' && window.location.origin.includes(':3000')) ? '' : 'http://localhost:8000';
+}
 
 // Create an Axios instance with default config
 const api = axios.create({

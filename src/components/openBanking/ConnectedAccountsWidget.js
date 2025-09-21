@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import openBankingService from '../../services/openBanking.service';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const ConnectedAccountsWidget = ({ showHeader = true, maxAccounts = 5 }) => {
   const [connectedAccounts, setConnectedAccounts] = useState([]);
@@ -42,6 +43,7 @@ const ConnectedAccountsWidget = ({ showHeader = true, maxAccounts = 5 }) => {
   const [lastSyncTime, setLastSyncTime] = useState(null);
 
   const navigate = useNavigate();
+  const { formatCurrency } = useCurrency();
 
   useEffect(() => {
     loadConnectedAccounts();
@@ -257,7 +259,7 @@ const ConnectedAccountsWidget = ({ showHeader = true, maxAccounts = 5 }) => {
               Total Balance
             </Typography>
             <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
-              {openBankingService.formatCurrency(getTotalBalance())}
+              {formatCurrency(getTotalBalance())}
             </Typography>
           </Box>
           
@@ -321,7 +323,7 @@ const ConnectedAccountsWidget = ({ showHeader = true, maxAccounts = 5 }) => {
                           textAlign: 'right'
                         }}
                       >
-                        {openBankingService.formatCurrency(account.balance)}
+                        {formatCurrency(account.balance)}
                       </Typography>
                       
                       <IconButton
